@@ -10,6 +10,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.annotations.TestOnly
 import java.net.URLEncoder
 
 
@@ -29,7 +30,7 @@ class Username(var username: String) {
         var notFound: Array<Array<String>> = arrayOf()
 
         runBlocking {
-            loop@ for (i in data) {
+            for (i in data) {
                 launch {
                     try {
                         val res: HttpResponse
@@ -40,10 +41,10 @@ class Username(var username: String) {
                         val accepted: Boolean
 
 
-                        if (i.int("t-code") != i.int("f-code") && (res.status.value == i.int("t-code") || res.status.value == i.int("f-code"))) {
-                            accepted = res.status.value == i.int("t-code")
+                        accepted = if (i.int("t-code") != i.int("f-code") && (res.status.value == i.int("t-code") || res.status.value == i.int("f-code"))) {
+                            res.status.value == i.int("t-code")
                         } else if (i.string("t-body").toString() in res.body<String>() || i.string("f-body").toString() in res.body<String>()) {
-                            accepted = i.string("t-body").toString() in res.body<String>()
+                            i.string("t-body").toString() in res.body<String>()
                         } else {
                             val debugBody = res.body<String>()
                             if (log) println("Unknown response to ${i.string("name")} $debugBody")
