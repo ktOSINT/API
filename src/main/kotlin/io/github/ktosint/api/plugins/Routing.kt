@@ -21,5 +21,15 @@ fun Application.configureRouting() {
             val result = obj.Reacher()
             call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
         }
+
+        get("/email/mboxvalid/{email}/{apikey}") {
+            try {
+                val obj = Email(call.parameters["email"]!!)
+                val result = obj.MBoxValid(call.parameters["apikey"]!!)
+                call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
+            } catch (e: IllegalArgumentException) {
+                call.respondText("Unable to make request, incorrect key was used.")
+            }
+        }
     }
 }
