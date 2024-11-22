@@ -31,5 +31,11 @@ fun Application.configureRouting() {
                 call.respondText("Unable to make request, incorrect key was used.")
             }
         }
+
+        get("/email/haveibeenpwned/{email}") {
+            val obj = Email(call.parameters["email"]!!)
+            val result = obj.HaveIBeenPwned()
+            call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
+        }
     }
 }
