@@ -1,6 +1,7 @@
 package io.github.ktosint.api.plugins
 
 import com.beust.klaxon.Klaxon
+import io.github.ktosint.api.lib.Domain
 import io.github.ktosint.api.lib.Email
 import io.github.ktosint.api.lib.Username
 import io.ktor.http.*
@@ -35,6 +36,12 @@ fun Application.configureRouting() {
         get("/email/haveibeenpwned/{email}") {
             val obj = Email(call.parameters["email"]!!)
             val result = obj.HaveIBeenPwned()
+            call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
+        }
+
+        get("/domain/dossier/{domain}") {
+            val obj = Domain(call.parameters["domain"]!!)
+            val result = obj.Dossier()
             call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
         }
     }
