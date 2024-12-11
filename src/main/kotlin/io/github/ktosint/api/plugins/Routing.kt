@@ -44,5 +44,11 @@ fun Application.configureRouting() {
             val result = obj.Dossier()
             call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
         }
+
+        get("/domain/redirects/{domain}") {
+            val obj = Domain(call.parameters["domain"]!!)
+            val result = obj.Redirects()
+            call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
+        }
     }
 }
