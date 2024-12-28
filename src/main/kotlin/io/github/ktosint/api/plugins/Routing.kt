@@ -56,5 +56,11 @@ fun Application.configureRouting() {
             val result = obj.Subdomains()
             call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
         }
+
+        get("/domain/similar/{domain}") {
+            val obj = Domain(call.parameters["domain"]!!)
+            val result = obj.Similar(20000L)
+            call.respondText(Klaxon().toJsonString(result.toList()), ContentType.parse("text/json"))
+        }
     }
 }

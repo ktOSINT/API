@@ -36,7 +36,8 @@ class Domain(val domain: String) {
                 parameter("name", domain)
                 parameter("type", "*")
             }
-            for (i in (Parser.default().parse(StringBuilder(dns.body<String>())) as JsonObject).array<JsonObject>("Answer")!!) {
+            for (i in (Parser.default()
+                .parse(StringBuilder(dns.body<String>())) as JsonObject).array<JsonObject>("Answer")!!) {
                 final["dnsRecords"] = (final["dnsRecords"] as Array<Map<String, Any>>) + mapOf(
                     "type" to i.int("type")!!,
                     "data" to i.string("data")!!,
@@ -65,7 +66,8 @@ class Domain(val domain: String) {
                     append("email", "")
                 }
             )
-            whois = (Parser.default().parse(StringBuilder(whoisRes.body<String>())) as JsonObject).string("whois")!!.replace("<br>", "\n")
+            whois = (Parser.default().parse(StringBuilder(whoisRes.body<String>())) as JsonObject).string("whois")!!
+                .replace("<br>", "\n")
         }
         final["domainWhois"] = whois
 
@@ -87,7 +89,10 @@ class Domain(val domain: String) {
                     append("Accept", "application/json")
                 }
             }
-            val link = if ("?" in res.headers["Location"]!!) res.headers["Location"]!!.replace("?", ".txt?") else res.headers["Location"]!! + ".txt"
+            val link = if ("?" in res.headers["Location"]!!) res.headers["Location"]!!.replace(
+                "?",
+                ".txt?"
+            ) else res.headers["Location"]!! + ".txt"
             nwhoisRes = client.get(link)
             nwhois = nwhoisRes.body()
         }
@@ -220,11 +225,44 @@ class Domain(val domain: String) {
 
         return found.toList()
     }
+
+    fun Similar(timeout: Long = 60000L): Pair<Map<String, String>, List<String>> {
+        var found = mutableMapOf<String, String>()
+        var available = mutableListOf<String>()
+        runBlocking {
+            withTimeoutOrNull(timeout) {
+                val resp = HttpClient(CIO).get("https://dnstwister.report/api/to_hex/$domain")
+                val json = Parser.default().parse(StringBuilder(resp.body<String>())) as JsonObject
+                val next = json.string("fuzz_url")!!
+                val res = HttpClient(CIO).get(next)
+                val data = (Parser.default()
+                    .parse(StringBuilder(res.body<String>())) as JsonObject).array<JsonObject>("fuzzy_domains")!!
+                for (i in data) {
+                    launch {
+                        try {
+                            val test = HttpClient(CIO).get(i.string("resolve_ip_url")!!)
+                            val result = Parser.default().parse(StringBuilder(test.body<String>())) as JsonObject
+                            if (result["ip"] != false) {
+                                found += result.string("domain")!! to result.string("ip")!!
+                            } else {
+                                available += result.string("domain")!!
+                            }
+                        } catch (e: Exception) {
+                            if (e is EOFException || e is IOException) {
+                                return@launch
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return found.toMap() to available.toList()
+    }
 }
 
 //@TestOnly
 //fun main() {
-//    val domain = "google.com"
+//    val domain = "firegamesite.com"
 //    val obj = Domain(domain)
 //    val dossier = obj.Dossier()
 //    println(dossier)
@@ -234,4 +272,6 @@ class Domain(val domain: String) {
 //    println(redirects)
 //    val subdomains = obj.Subdomains()
 //    println(subdomains)
+//    val similar = obj.Similar()
+//    println(similar)
 //}
