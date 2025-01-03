@@ -3,6 +3,7 @@ package io.github.ktosint.api.plugins
 import com.beust.klaxon.Klaxon
 import io.github.ktosint.api.lib.Domain
 import io.github.ktosint.api.lib.Email
+import io.github.ktosint.api.lib.IP
 import io.github.ktosint.api.lib.Username
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -61,6 +62,12 @@ fun Application.configureRouting() {
             val obj = Domain(call.parameters["domain"]!!)
             val result = obj.Similar(20000L)
             call.respondText(Klaxon().toJsonString(result.toList()), ContentType.parse("text/json"))
+        }
+
+        get("/ip/locate/{ip}") {
+            val obj = IP(call.parameters["ip"]!!)
+            val result = obj.Locate()
+            call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
         }
     }
 }
