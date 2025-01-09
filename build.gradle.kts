@@ -37,6 +37,7 @@ dependencies {
     implementation("com.beust:klaxon:5.5")
     implementation("io.ktor:ktor-client-core:2.3.12")
     implementation("io.ktor:ktor-client-cio:2.3.12")
+    implementation("org.jsoup:jsoup:1.16.1")
 }
 
 tasks.withType<Copy> {

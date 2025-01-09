@@ -69,5 +69,11 @@ fun Application.configureRouting() {
             val result = obj.Locate()
             call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
         }
+
+        get("/ip/shodan/{ip}") {
+            val obj = IP(call.parameters["ip"]!!)
+            val result = obj.Shodan()
+            call.respondText(Klaxon().toJsonString(result), ContentType.parse("text/json"))
+        }
     }
 }
